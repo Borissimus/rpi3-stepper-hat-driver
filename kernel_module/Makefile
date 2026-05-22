@@ -1,3 +1,5 @@
+# Copyright (c) Borys Nykytiuk <borysworking@gmail.com>
+
 obj-m += stepper_hat.o
 
 KDIR := /usr/src/linux-headers-6.12.47+rpt-rpi-v8

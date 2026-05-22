@@ -1,5 +1,7 @@
 # Stepper Motor HAT kernel module
 
+Copyright (c) Borys Nykytiuk <borysworking@gmail.com>
+
 This module replaces the hello-world test with a misc-device driver for the
 two DRV8825 channels on the Waveshare Stepper Motor HAT.
 
@@ -22,6 +24,9 @@ make
 ```
 
 Artifacts are written to `/Users/bnykytiuk/projects/rp3-docker/build/kernel_module/`.
+
+For the Docker-based flow used in this repository, see the top-level
+[`README.md`](/Users/bnykytiuk/projects/rp3-docker/README.md).
 
 ## IOCTL interface
 
@@ -47,6 +52,15 @@ Supported operations:
 The module defaults to hardware microstep control, which matches the HAT's DIP
 switches. Software microstep control only makes sense if your board is wired
 for it, as described in the vendor manual.
+
+## Raspberry Pi notes
+
+- On the tested Raspberry Pi 3 kernel, the BCM GPIOs are exposed through a
+  dynamic `gpiochip` base. The driver detects the `pinctrl-bcm2835` base at
+  load time instead of assuming a fixed global GPIO numbering.
+- The module was validated on `6.12.47+rpt-rpi-v8`.
+- If you want non-root access to `/dev/stepper_hat`, add a `udev` rule that
+  assigns the device to the `gpio` group.
 
 ## Notes
 

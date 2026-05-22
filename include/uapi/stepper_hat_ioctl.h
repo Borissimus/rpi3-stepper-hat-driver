@@ -1,3 +1,5 @@
+/* Copyright (c) Borys Nykytiuk <borysworking@gmail.com> */
+
 #ifndef STEPPER_HAT_IOCTL_H
 #define STEPPER_HAT_IOCTL_H
 

@@ -1,3 +1,5 @@
+# Copyright (c) Borys Nykytiuk <borysworking@gmail.com>
+
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive

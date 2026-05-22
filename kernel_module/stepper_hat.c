@@ -1,7 +1,10 @@
+/* Copyright (c) Borys Nykytiuk <borysworking@gmail.com> */
+
 #include <linux/compat.h>
 #include <linux/delay.h>
 #include <linux/fs.h>
 #include <linux/gpio.h>
+#include <linux/gpio/driver.h>
 #include <linux/kernel.h>
 #include <linux/kthread.h>
 #include <linux/miscdevice.h>
@@ -21,6 +24,11 @@ static bool enable_active_high = true;
 module_param(enable_active_high, bool, 0444);
 MODULE_PARM_DESC(enable_active_high,
 		 "Use active-high motor enable (default true for Waveshare Rev2.1)");
+
+static char *gpiochip_label = "pinctrl-bcm2835";
+module_param(gpiochip_label, charp, 0444);
+MODULE_PARM_DESC(gpiochip_label,
+		 "GPIO chip label used to translate BCM offsets into global GPIO numbers");
 
 struct stepper_hat_gpio_config {
 	unsigned int enable_gpio;
@@ -90,6 +98,43 @@ static const struct stepper_hat_gpio_config stepper_hat_default_gpio_map[] = {
 		.mode_gpios = { 21, 22, 27 },
 	},
 };
+
+static void stepper_hat_apply_gpio_base(struct stepper_hat_gpio_config *gpio,
+					unsigned int gpio_base)
+{
+	int i;
+
+	gpio->enable_gpio += gpio_base;
+	gpio->dir_gpio += gpio_base;
+	gpio->step_gpio += gpio_base;
+	for (i = 0; i < ARRAY_SIZE(gpio->mode_gpios); i++)
+		gpio->mode_gpios[i] += gpio_base;
+}
+
+static unsigned int stepper_hat_detect_gpio_base(void)
+{
+	struct gpio_device *gdev;
+	int base;
+
+	gdev = gpio_device_find_by_label(gpiochip_label);
+	if (!gdev) {
+		pr_warn("%s: gpiochip label '%s' not found, assuming legacy base 0\n",
+			STEPPER_HAT_NAME, gpiochip_label);
+		return 0;
+	}
+
+	base = gpio_device_get_base(gdev);
+	gpio_device_put(gdev);
+	if (base < 0) {
+		pr_warn("%s: gpiochip '%s' has invalid base %d, assuming 0\n",
+			STEPPER_HAT_NAME, gpiochip_label, base);
+		return 0;
+	}
+
+	pr_info("%s: using gpiochip '%s' base %d\n",
+		STEPPER_HAT_NAME, gpiochip_label, base);
+	return base;
+}
 
 static const struct stepper_hat_gpio_labels stepper_hat_default_labels[] = {
 	{
@@ -568,16 +613,19 @@ static const struct file_operations stepper_hat_fops = {
 
 static int __init stepper_hat_init(void)
 {
+	unsigned int gpio_base;
 	int ret;
 	int i;
 
 	stepper_hat.miscdev.fops = &stepper_hat_fops;
+	gpio_base = stepper_hat_detect_gpio_base();
 
 	for (i = 0; i < STEPPER_HAT_MOTOR_COUNT; i++) {
 		struct stepper_hat_motor *motor = &stepper_hat.motors[i];
 
 		motor->id = i + 1;
 		motor->gpio = stepper_hat_default_gpio_map[i];
+		stepper_hat_apply_gpio_base(&motor->gpio, gpio_base);
 		mutex_init(&motor->lock);
 		init_waitqueue_head(&motor->wq);
 		motor->control_mode = STEPPER_HAT_CONTROL_HARDWARE;

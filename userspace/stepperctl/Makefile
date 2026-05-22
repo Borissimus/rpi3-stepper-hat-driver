@@ -1,3 +1,5 @@
+# Copyright (c) Borys Nykytiuk <borysworking@gmail.com>
+
 BUILD_ROOT ?= $(abspath $(CURDIR)/../../build)
 BUILD_DIR := $(BUILD_ROOT)/stepperctl
 BIN := $(BUILD_DIR)/stepperctl

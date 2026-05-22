@@ -1,5 +1,7 @@
 #define _GNU_SOURCE
 
+/* Copyright (c) Borys Nykytiuk <borysworking@gmail.com> */
+
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
