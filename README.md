@@ -142,8 +142,8 @@ If the motor does not move or hold torque:
 
 See also:
 
-- [kernel_module/README.md](/Users/bnykytiuk/projects/rp3-docker/kernel_module/README.md)
-- [userspace/stepperctl/README.md](/Users/bnykytiuk/projects/rp3-docker/userspace/stepperctl/README.md)
+- [kernel_module/README.md](kernel_module/README.md)
+- [userspace/stepperctl/README.md](userspace/stepperctl/README.md)
 
 ## License
 

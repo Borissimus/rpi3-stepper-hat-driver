@@ -24,10 +24,33 @@ Cross-build for the Raspberry Pi image used in this repo:
 make CROSS_COMPILE=aarch64-linux-gnu-
 ```
 
-The binary is written to `/Users/bnykytiuk/projects/rp3-docker/build/stepperctl/stepperctl`.
+The binary is written to `build/stepperctl/stepperctl` relative to the
+repository root.
 
 For the full build, deploy, permissions, and hardware test flow, see the
-top-level [`README.md`](/Users/bnykytiuk/projects/rp3-docker/README.md).
+top-level [`README.md`](../../README.md).
+
+## Install on Raspberry Pi
+
+Install the binary into the system path:
+
+```sh
+sudo install -m 0755 stepperctl /usr/local/bin/stepperctl
+```
+
+Verify that the driver is already loaded and the device exists:
+
+```sh
+ls -l /dev/stepper_hat
+stepperctl status --all
+```
+
+If `/dev/stepper_hat` is missing after reboot, the kernel module is not loaded
+yet. Follow the module install and autoload steps in
+[`kernel_module/README.md`](../../kernel_module/README.md).
+
+If you want to run `stepperctl` without `sudo`, configure the `udev` rule and
+device group ownership described in the top-level [`README.md`](../../README.md).
 
 ## Commands
 

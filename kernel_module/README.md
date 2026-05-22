@@ -23,15 +23,15 @@ sudo insmod stepper_hat.ko enable_active_high=0
 make
 ```
 
-Artifacts are written to `/Users/bnykytiuk/projects/rp3-docker/build/kernel_module/`.
+Artifacts are written to `build/kernel_module/` relative to the repository root.
 
 For the Docker-based flow used in this repository, see the top-level
-[`README.md`](/Users/bnykytiuk/projects/rp3-docker/README.md).
+[`README.md`](../README.md).
 
 ## IOCTL interface
 
 Shared request/response structures live in
-[`include/uapi/stepper_hat_ioctl.h`](/Users/bnykytiuk/projects/rp3-docker/include/uapi/stepper_hat_ioctl.h:1).
+[`include/uapi/stepper_hat_ioctl.h`](../include/uapi/stepper_hat_ioctl.h).
 
 Supported operations:
 
@@ -61,6 +61,30 @@ for it, as described in the vendor manual.
 - The module was validated on `6.12.47+rpt-rpi-v8`.
 - If you want non-root access to `/dev/stepper_hat`, add a `udev` rule that
   assigns the device to the `gpio` group.
+
+## Install and autoload on Raspberry Pi
+
+To make the module available after reboot, install it into the running kernel's
+module tree and load it through `modprobe` instead of `insmod`:
+
+```sh
+sudo install -D -m 0644 stepper_hat.ko /lib/modules/$(uname -r)/extra/stepper_hat.ko
+sudo depmod -a
+sudo modprobe stepper_hat
+```
+
+To autoload it on boot:
+
+```sh
+echo stepper_hat | sudo tee /etc/modules-load.d/stepper_hat.conf >/dev/null
+```
+
+After that, verify:
+
+```sh
+lsmod | grep stepper_hat
+ls -l /dev/stepper_hat
+```
 
 ## Notes
 
