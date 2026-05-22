@@ -211,6 +211,8 @@ static const char *microstep_name(uint8_t microstep)
 		return "1/16";
 	case STEPPER_HAT_MICROSTEP_THIRTYSECOND:
 		return "1/32";
+	case STEPPER_HAT_MICROSTEP_HARDWARE:
+		return "hardware";
 	default:
 		return "unknown";
 	}
@@ -350,8 +352,12 @@ static int run_configure(int argc, char **argv, const struct cli_context *ctx)
 	config.motor = motor;
 	if (!control_set)
 		config.control_mode = status.control_mode;
-	if (!microstep_set)
-		config.microstep = status.microstep;
+	if (!microstep_set) {
+		if (config.control_mode == STEPPER_HAT_CONTROL_HARDWARE)
+			config.microstep = STEPPER_HAT_MICROSTEP_FULL;
+		else
+			config.microstep = status.microstep;
+	}
 	if (!hold_set)
 		config.hold_enabled = status.hold_enabled;
 	if (!delay_set)
@@ -451,6 +457,16 @@ static int run_move(int argc, char **argv, const struct cli_context *ctx)
 	fd = open_stepper_device(device);
 	if (fd < 0)
 		return 1;
+
+	if (!move.step_delay_us) {
+		struct stepper_hat_status status;
+
+		if (get_status(fd, move.motor, &status)) {
+			close(fd);
+			return 1;
+		}
+		move.step_delay_us = status.step_delay_us;
+	}
 
 	if (ioctl(fd, STEPPER_HAT_IOC_MOVE, &move) < 0) {
 		fprintf(stderr, "MOVE failed for motor %u: %s\n",

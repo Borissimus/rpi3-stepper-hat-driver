@@ -244,7 +244,10 @@ static void stepper_hat_fill_status_locked(struct stepper_hat_motor *motor,
 	status->motor = motor->id;
 	status->busy = motor->busy;
 	status->control_mode = motor->control_mode;
-	status->microstep = motor->microstep;
+	if (motor->control_mode == STEPPER_HAT_CONTROL_HARDWARE)
+		status->microstep = STEPPER_HAT_MICROSTEP_HARDWARE;
+	else
+		status->microstep = motor->microstep;
 	status->enabled = motor->enabled;
 	status->direction = motor->direction;
 	status->stop_requested = motor->stop_requested;
@@ -433,6 +436,9 @@ static long stepper_hat_ioctl_configure(struct stepper_hat_config __user *argp)
 	if (config.control_mode > STEPPER_HAT_CONTROL_SOFTWARE)
 		return -EINVAL;
 	if (config.microstep > STEPPER_HAT_MICROSTEP_THIRTYSECOND)
+		return -EINVAL;
+	if (config.control_mode == STEPPER_HAT_CONTROL_HARDWARE &&
+	    config.microstep != STEPPER_HAT_MICROSTEP_FULL)
 		return -EINVAL;
 	if (config.default_step_delay_us &&
 	    stepper_hat_validate_delay(config.default_step_delay_us))

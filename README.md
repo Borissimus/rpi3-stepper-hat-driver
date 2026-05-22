@@ -62,6 +62,10 @@ Load the driver:
 ssh rpi-3b_home 'sudo insmod /tmp/stepper_hat.ko'
 ```
 
+For a persistent setup that survives reboot, install the module with `modprobe`
+and `modules-load.d` as described in
+[`kernel_module/README.md`](kernel_module/README.md).
+
 Check that it registered successfully:
 
 ```sh
